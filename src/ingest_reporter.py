@@ -73,8 +73,8 @@ notInDoneState = getData(workflowstatemonitorUrl + '/states/?excludes=Done&onlyL
 inStoppedState = [e for e in notInDoneState if e['stateName'] == 'Stopped']
 inFailedState = [e for e in notInDoneState if e['stateName'] == 'Failed']
 
-# if any files are in the failed state, set the priority of the email to high
-# (1).  If no files have failed, set the priority to low (5)
+# if any files are in the failed state, set the priority of the email to 1 (high)
+# If no files have failed, set the priority to 5 (low)
 if len(inFailedState) > 0:
     emailPriority = '1'
 else:
