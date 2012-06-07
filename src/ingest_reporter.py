@@ -13,7 +13,7 @@ from ingest_reporter_lib import *
 ##
 parser = argparse.ArgumentParser(description='YouSee døgnrapport')
 parser.add_argument('-settings', '-s', nargs=1, action="store", dest="settingsFile",
-                    help='full path to settings file. Settings are in the INI file syntax.')
+    help='full path to settings file. Settings are in the INI file syntax.')
 args = parser.parse_args()
 
 configParser = SafeConfigParser()
@@ -27,22 +27,22 @@ if not configParser.has_section('mail'):
     raise Exception("Error in settings file: No mail section.")
 
 for parameter in ['workflowstatemonitorUrl', 'ingestmonitorwebpageUrl', 'doneStartTime', 'doneEndTime']:
-    if not configParser.has_option('init',parameter):
+    if not configParser.has_option('init', parameter):
         raise Exception("Error in settings file: No '" + parameter + "' parameter in init section.")
 
 for parameter in ['recipient', 'sender', 'subject', 'smtpServer']:
-    if not configParser.has_option('mail',parameter):
+    if not configParser.has_option('mail', parameter):
         raise Exception("Error in settings file: No '" + parameter + "' parameter in mail section.")
 
-workflowstatemonitorUrl = configParser.get('init','workflowstatemonitorUrl')
-ingestmonitorwebpageUrl = configParser.get('init','ingestmonitorwebpageUrl')
-doneStartTime = configParser.get('init','doneStartTime')
-doneEndTime = configParser.get('init','doneEndTime')
+workflowstatemonitorUrl = configParser.get('init', 'workflowstatemonitorUrl')
+ingestmonitorwebpageUrl = configParser.get('init', 'ingestmonitorwebpageUrl')
+doneStartTime = configParser.get('init', 'doneStartTime')
+doneEndTime = configParser.get('init', 'doneEndTime')
 
 recipient = configParser.get('mail', 'recipient')
-sender = configParser.get('mail','sender')
-subject = configParser.get('mail','subject')
-smtpServer = configParser.get('mail','smtpServer')
+sender = configParser.get('mail', 'sender')
+subject = configParser.get('mail', 'subject')
+smtpServer = configParser.get('mail', 'smtpServer')
 
 ##
 ## end set-up
@@ -61,7 +61,8 @@ doneEndDate = todayString + 'T' + doneEndTime
 
 # get a list of files in "Done" state. For each file only the last state is
 # requested.
-inDoneState = getData(workflowstatemonitorUrl + '/states/?includes=Done&onlyLast=true&startDate=' + doneStartDate + '&endDate=' + doneEndDate)
+inDoneState = getData(
+    workflowstatemonitorUrl + '/states/?includes=Done&onlyLast=true&startDate=' + doneStartDate + '&endDate=' + doneEndDate)
 
 # get all files not in Done state regardless of date and time. For each file
 # only the last state is requested.
@@ -85,10 +86,9 @@ inProgressState = sorted(
     [e for e in notInDoneState if e['stateName'] != 'Stopped' and e['stateName'] != 'Failed'],
     compare_stateName)
 
-# Create the body of the message (a plain-text and an HTML version).
-textMessage = writeTextbody(ingestmonitorwebpageUrl, inDoneState, inStoppedState, inFailedState, inProgressState, doneStartTime, doneEndTime)
-htmlMessage = writeHTMLbody(ingestmonitorwebpageUrl, inDoneState, inStoppedState, inFailedState, inProgressState, doneStartTime, doneEndTime)
+# Create the body of the message (only an HTML version).
+htmlMessage = writeHTMLbody(ingestmonitorwebpageUrl, inDoneState, inStoppedState, inFailedState, inProgressState,
+    doneStartTime, doneEndTime)
+textMessage = ""
 
-#print htmlMessage
-#print textMessage
 sendMail(smtpServer, sender, recipient, subject, htmlMessage, textMessage, emailPriority)
