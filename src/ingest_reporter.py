@@ -97,7 +97,7 @@ inProgressState = sorted(
 
 # Create the body of the message (only an HTML version).
 htmlMessage = writeHTMLbody(ingestmonitorwebpageUrl, inDoneState, inStoppedState, inFailedState, inProgressState,
-    doneStartDate, doneEndDate)
+    startdatetime.strftime("%H.%M"), enddatetime.strftime("%H.%M"))
 # Iin this first release we don not want to include a text version of the email
 textMessage = ""
 

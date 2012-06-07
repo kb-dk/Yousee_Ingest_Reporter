@@ -103,17 +103,18 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, d
 <html>
   <head></head>
   <body>
-    <p>Kære Operatør<br>
-       <br>
-       Hvordan går det med dig? Har du det godt?<br>
-       <br>
+    <p>Kære Operatør</p>
+       <p>
+       Hvordan går det med dig? Har du det godt?
+       </p><p>
        Jeg har her en rapport over hvordan det er gået med opsamling af YouSee
-       TV i det seneste døgn.
-       <br>
+       TV i det seneste døgn. Informationerne i denne mail er alle trukket fra
+       <a href="%(url)s">Ingest Monitor websiden</a> som du også selv kan klikke rundt på.
+       </p><p>
        Døgnet startede i går klokken %(start)s og varede indtil  dag klokken %(end)s.
-
-    </p>
-''' % {'start': dayStart, 'end': dayEnd}
+       </p>
+       <p>
+''' % {'url': appurl, 'start': dayStart, 'end': dayEnd}
 
     html += '<hr>'
     if len(failedState) > 0:
