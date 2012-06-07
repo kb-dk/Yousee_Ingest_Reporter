@@ -13,7 +13,7 @@ from ingest_reporter_lib import *
 ##
 parser = argparse.ArgumentParser(description='YouSee døgnrapport')
 parser.add_argument('-settings', '-s', nargs=1, action="store", dest="settingsFile",
-        help='full path to settings file. Settings are in the INI file syntax.')
+                    help='full path to settings file. Settings are in the INI file syntax.')
 args = parser.parse_args()
 
 configParser = SafeConfigParser()
@@ -82,8 +82,8 @@ else:
 # gather all files that are not either failed or done. The list is ordered by
 # stateName using the compare_stateName function defined above.
 inProgressState = sorted(
-        [e for e in notInDoneState if e['stateName'] != 'Stopped' and e['stateName'] != 'Failed'],
-        compare_stateName)
+    [e for e in notInDoneState if e['stateName'] != 'Stopped' and e['stateName'] != 'Failed'],
+    compare_stateName)
 
 # Create the body of the message (a plain-text and an HTML version).
 textMessage = writeTextbody(ingestmonitorwebpageUrl, inDoneState, inStoppedState, inFailedState, inProgressState, doneStartTime, doneEndTime)
