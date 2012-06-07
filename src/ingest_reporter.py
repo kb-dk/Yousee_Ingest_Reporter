@@ -26,7 +26,7 @@ if not configParser.has_section('init'):
 if not configParser.has_section('mail'):
     raise Exception("Error in settings file: No mail section.")
 
-for parameter in ['workflowstatemonitorUrl', 'ingestmonitorwebpageUrl', 'doneStartTime', 'doneEndTime']:
+for parameter in ['workflowstatemonitorUrl', 'ingestmonitorwebpageUrl', 'doneStartTime']:
     if not configParser.has_option('init', parameter):
         raise Exception("Error in settings file: No '" + parameter + "' parameter in init section.")
 
@@ -36,8 +36,7 @@ for parameter in ['recipient', 'sender', 'subject', 'smtpServer']:
 
 workflowstatemonitorUrl = configParser.get('init', 'workflowstatemonitorUrl')
 ingestmonitorwebpageUrl = configParser.get('init', 'ingestmonitorwebpageUrl')
-doneStartTime = configParser.get('init', 'doneStartTime')
-doneEndTime = configParser.get('init', 'doneEndTime')
+doneStartTime = configParser.get('init', 'doneStartTime').split(':')
 
 recipient = configParser.get('mail', 'recipient')
 sender = configParser.get('mail', 'sender')
@@ -50,14 +49,24 @@ smtpServer = configParser.get('mail', 'smtpServer')
 
 
 # Get a list of all files that have been ingested in the last 24 hours (or,
-# actually, from 'startTime' o'clock yesterday to 'endTime' o'clock today.)
-# Typically this could be from 07.00 yesterday morning to 07.00 this morning.
-today = datetime.datetime.now()
-todayString = today.strftime('%Y-%m-%d')
-yesterdayString = (today - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+# actually, from 'doneStartTime' o'clock yesterday to 24 hours later. Just
+# enough time for a whole season of a really great TV series)
+yesterday=datetime.datetime.now() - datetime.timedelta(days=1)
+startdatetime=datetime.datetime.combine(
+    # yesterday's date
+    datetime.date(
+        yesterday.year,
+        yesterday.month,
+        yesterday.day),
+    # the configured time of day to start. doneStartTime is a list of [hour,minute]
+    datetime.time(
+        int(doneStartTime[0]),
+        int(doneStartTime[1])))
 
-doneStartDate = yesterdayString + 'T' + doneStartTime
-doneEndDate = todayString + 'T' + doneEndTime
+enddatetime=startdatetime + datetime.timedelta(days=1)
+
+doneStartDate = startdatetime.isoformat()
+doneEndDate = enddatetime.isoformat()
 
 # get a list of files in "Done" state. For each file only the last state is
 # requested.
@@ -88,7 +97,7 @@ inProgressState = sorted(
 
 # Create the body of the message (only an HTML version).
 htmlMessage = writeHTMLbody(ingestmonitorwebpageUrl, inDoneState, inStoppedState, inFailedState, inProgressState,
-    doneStartTime, doneEndTime)
+    doneStartDate, doneEndDate)
 # Iin this first release we don not want to include a text version of the email
 textMessage = ""
 
