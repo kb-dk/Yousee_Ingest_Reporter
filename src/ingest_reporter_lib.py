@@ -34,6 +34,7 @@ def sendMail(smtpServer, sender, recipient, subject, htmlMessage, textMessage, p
     msg['To'] = Header(recipient.encode('utf-8'), 'UTF-8').encode()
 
     # Record the MIME types of both parts - text/plain and text/html.
+    # Add support for empty text part
     if not textMessage == '':
         part1 = MIMEText(textMessage.encode('utf-8'), 'plain', 'UTF-8')
     part2 = MIMEText(htmlMessage.encode('utf-8'), 'html', 'UTF-8')
@@ -41,6 +42,7 @@ def sendMail(smtpServer, sender, recipient, subject, htmlMessage, textMessage, p
     # Attach parts into message container.
     # According to RFC 2046, the last part of a multipart message, in this case
     # the HTML message, is best and preferred.
+    # Add support for empty text part
     if not textMessage == '':
         msg.attach(part1)
 

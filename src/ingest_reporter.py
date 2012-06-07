@@ -89,6 +89,7 @@ inProgressState = sorted(
 # Create the body of the message (only an HTML version).
 htmlMessage = writeHTMLbody(ingestmonitorwebpageUrl, inDoneState, inStoppedState, inFailedState, inProgressState,
     doneStartTime, doneEndTime)
+# Iin this first release we don not want to include a text version of the email
 textMessage = ""
 
 sendMail(smtpServer, sender, recipient, subject, htmlMessage, textMessage, emailPriority)
