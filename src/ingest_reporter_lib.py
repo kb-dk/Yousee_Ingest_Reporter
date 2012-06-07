@@ -69,7 +69,7 @@ def getDetailUrl(appurl, filename):
     url = appurl
     url += '/#file='
     url += filename
-    url += '&mode=details&period=day'
+    url += '&mode=details&period=all'
     return url
 
 
