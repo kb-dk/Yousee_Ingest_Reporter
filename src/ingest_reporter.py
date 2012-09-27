@@ -78,7 +78,7 @@ inDoneState = getData(
 notInDoneState = getData(workflowstatemonitorUrl + '/states/?excludes=Done&onlyLast=true')
 
 # States Stopped and Failed are special, the rest of the of files are
-# considered to be in progress. Progress includes e.i. "Queued" files.
+# considered to be in progress. Progress also includes "Queued" files.
 inStoppedState = [e for e in notInDoneState if e['stateName'] == 'Stopped']
 inFailedState = [e for e in notInDoneState if e['stateName'] == 'Failed']
 
