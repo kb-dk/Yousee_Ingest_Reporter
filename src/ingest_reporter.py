@@ -95,6 +95,23 @@ inProgressState = sorted(
     [e for e in notInDoneState if e['stateName'] != 'Stopped' and e['stateName'] != 'Failed'],
     compare_stateName)
 
+## Implementation of the functionality that ensures no failed object will be
+## overlooked because of automatic restart. 
+## To implement this we compare a set of all objects with a historic "failed" state
+## with the set of objects currently being processed. The intersection of
+## these two sets will be included in the report.
+## To ensure we capture all potential problems, this functionality includes all
+## historic objects.
+historicFailedState = getData(workflowstatemonitorUrl + '/states/?includes=Failed')
+
+# Extract a set of object names on objects in progress
+inProgressNames = set(
+    [e['entity']['name'] for e in getData(workflowstatemonitorUrl + '/states/?excludes=Done')])
+
+# Calculate the intersection
+failedAndInProgress = [e for e in failed if e['entity']['name'] in inProgressNames]
+
+
 # Create the body of the message (only an HTML version).
 htmlMessage = writeHTMLbody(ingestmonitorwebpageUrl, inDoneState, inStoppedState, inFailedState, inProgressState,
     startdatetime.strftime("%H.%M"), enddatetime.strftime("%H.%M"))
