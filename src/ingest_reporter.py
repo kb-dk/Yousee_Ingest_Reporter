@@ -113,9 +113,16 @@ failedAndInProgress = [e for e in failed if e['entity']['name'] in inProgressNam
 
 
 # Create the body of the message (only an HTML version).
-htmlMessage = writeHTMLbody(ingestmonitorwebpageUrl, inDoneState, inStoppedState, inFailedState, inProgressState,
-    startdatetime.strftime("%H.%M"), enddatetime.strftime("%H.%M"))
-# Iin this first release we don not want to include a text version of the email
+htmlMessage = writeHTMLbody(
+    ingestmonitorwebpageUrl,
+    inDoneState,
+    inStoppedState,
+    inFailedState,
+    inProgressState,
+    startdatetime.strftime("%H.%M"),
+    enddatetime.strftime("%H.%M"))
+
+# In this first release we don not want to include a text version of the email
 textMessage = ""
 
 sendMail(smtpServer, sender, recipient, subject, htmlMessage, textMessage, emailPriority)
