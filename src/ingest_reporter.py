@@ -119,6 +119,7 @@ htmlMessage = writeHTMLbody(
     inStoppedState,
     inFailedState,
     inProgressState,
+    failedAndInProgress,
     startdatetime.strftime("%H.%M"),
     enddatetime.strftime("%H.%M"))
 

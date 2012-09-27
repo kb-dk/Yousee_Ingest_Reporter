@@ -95,7 +95,7 @@ def compare_name(a, b):
     return cmp(a['entity']['name'], b['entity']['name'])
 
 # construct the HTML part of the report email
-def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, dayStart, dayEnd):
+def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, failedAndInProgress, dayStart, dayEnd):
     """
 
     """
@@ -122,8 +122,9 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, d
         html += u'<h3>Filer som fejlede under import:</h3>'
         html += u'<p>'
         for e in failedState:
-            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' + e['entity'][
-                                                                                      'name'] + u'</a><br>\n'
+            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
+                    + e['entity']['name'] \
+                    + u'</a><br>\n'
         html += u'</p>'
     else:
         html += u'<p>Ingen filer er i en fejltilstand.</p>.'
@@ -134,8 +135,9 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, d
         html += u'<h3>Filer der er markeret som værende stoppet:</h3>'
         html += u'<p>'
         for e in stoppedState:
-            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' + e['entity'][
-                                                                                      'name'] + u'</a><br>\n'
+            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
+                    + e['entity']['name'] \
+                    + u'</a><br>\n'
         html += u'</p>'
     else:
         html += u'<p>Ingen filer er markeret som stoppet.</p>'
@@ -146,7 +148,15 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, d
         html += u'<h3>Filer som stadig er under behandling eller sat i kø:</h3>'
         html += u'<p>'
         for e in progressState:
-            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' + e['component'] + ', ' + e['stateName'] + ', ' + e['entity']['name'] + '</a><br>\n'
+            html += u'<a href="' \
+                    + getDetailUrl(appurl, e['entity']['name']) \
+                    + '">' \
+                    + e['component'] \
+                    + ', ' \
+                    + e['stateName'] \
+                    + ', ' \
+                    + e['entity']['name'] \
+                    + '</a><br>\n'
         html += u'</p>'
     else:
         html += u'<p>Ingen filer bliver processeret eller er i kø.'
@@ -157,11 +167,31 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, d
         html += u'<h3>Filer importeret med success:</h3>'
         html += u'<p>'
         for e in doneState:
-            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' + e['entity'][
-                                                                                      'name'] + u'</a><br>\n'
+            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
+                    + e['entity']['name'] \
+                    + u'</a><br>\n'
         html += u'</p>'
     else:
         html += u'<p style="color:red">Ingen filer er blevet importeret med succes i den seneste rapporteringsperiode.</p>'
+
+    if len(failedAndInProgress) > 0:
+        # add a list of files still in progress BUT previously were in a FAILED state
+        html += u'<h3>Filer bliver behandlet men som har en historisk fejlstatus.</h3>'
+        html += u'<p>'
+        for e in failedAndInProgress:
+            html += u'<a href="'\
+                    + getDetailUrl(appurl, e['entity']['name'])\
+                    + '">'\
+                    + e['component']\
+                    + ', '\
+                    + e['stateName']\
+                    + ', '\
+                    + e['entity']['name']\
+                    + '</a><br>\n'
+        html += u'</p>'
+    else:
+        html += u'<p>Ingen filer er i fare for uendelig restart-loop.'
+
 
     # end the html part of the report
     html += u'''\
