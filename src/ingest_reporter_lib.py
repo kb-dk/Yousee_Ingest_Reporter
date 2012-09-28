@@ -95,8 +95,14 @@ def compare_stateName(a, b):
 def compare_name(a, b):
     return cmp(a['entity']['name'], b['entity']['name'])
 
+def gatherOnComponent(l):
+    newList = []
+    for c in list(set([e['component'] for e in l])):
+        newList.append([c,[e for e in l if e['component'] == c]])
+    return newList
+
 # construct the HTML part of the report email
-def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, failedAndInProgress, dayStart, dayEnd):
+def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, failedAndInProgress, componentList, dayStart, dayEnd):
     """
 
     """
@@ -106,21 +112,72 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, f
   <body>
     <p>Kære Operatør</p>
        <p>
-       Hvordan går det med dig? Har du det godt?
-       </p><p>
-       Jeg har her en rapport over hvordan det er gået med opsamling af YouSee
+       Her en rapport over hvordan det er gået med opsamling af YouSee
        TV i det seneste døgn. Informationerne i denne mail er alle trukket fra
        <a href="%(url)s">Ingest Monitor websiden</a> som du også selv kan klikke rundt på.
        </p><p>
-       Døgnet startede i går klokken %(start)s og varede indtil  dag klokken %(end)s.
+       Døgnet startede i går klokken %(start)s og varede indtil i dag klokken %(end)s.
        </p>
        <p>
 ''' % {'url': appurl, 'start': dayStart, 'end': dayEnd}
 
     html += '<hr>'
+    html += u'<p>I det seneste døgn blev der importeret ' + str(len(doneState)) + ' filer.</p>'
+
+#    html += '<hr>'
+#    if len(progressState) > 0:
+#        # add a list of files still in progress
+#        html += u'<h3>Filer som stadig er under behandling eller sat i kø:</h3>'
+#        html += u'<p>'
+#        for e in progressState:
+#            html += u'<a href="' \
+#                    + getDetailUrl(appurl, e['entity']['name']) \
+#                    + '">' \
+#                    + e['component'] \
+#                    + ', ' \
+#                    + e['stateName'] \
+#                    + ', ' \
+#                    + e['entity']['name'] \
+#                    + '</a><br>\n'
+#        html += u'</p>'
+#    else:
+#        html += u'<p>Ingen filer bliver processeret eller er i kø.'
+
+#    html += '<hr>'
+#    if len(doneState) > 0:
+#        # add list of done files to the report
+#        html += u'<h3>Filer importeret med success:</h3>'
+#        html += u'<p>'
+#        for e in doneState:
+#            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
+#                    + e['entity']['name'] \
+#                    + u'</a><br>\n'
+#        html += u'</p>'
+#    else:
+#        html += u'<p style="color:red">Ingen filer er blevet importeret med succes i den seneste rapporteringsperiode.</p>'
+
+
+    if len(componentList) > 0:
+        # add a list of files still in progress BUT previously were in a FAILED state
+        # grouped by the component
+        html += u'<h3>Filer som tidligere fejlede og nu forsøges genbehandlet.</h3>'
+        html += u'<p>'
+        for component in componentList:
+            html += u'<h4>Følgende filer fejlede i ' + component[0] + ' komponenten:</h4>'
+            for e in component[1]:
+                html += u'<a href="'\
+                        + getDetailUrl(appurl, e['entity']['name'])\
+                        + '">'\
+                        + e['entity']['name']\
+                        + '</a><br>\n'
+            html += u'</p>'
+    else:
+        html += u'<p>Ingen filer under behandling har en fejlstatus.</p>'
+
+    html += '<hr>'
     if len(failedState) > 0:
         # add a list of failed files to the report.
-        html += u'<h3>Filer som fejlede under import:</h3>'
+        html += u'<h3>Filer som fejlede under import og ikke er under behandling:</h3>'
         html += u'<p>'
         for e in failedState:
             html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
@@ -130,10 +187,11 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, f
     else:
         html += u'<p>Ingen filer er i en fejltilstand.</p>.'
 
+
     html += '<hr>'
     if len(stoppedState) > 0:
         # add a list of failed files to the report.
-        html += u'<h3>Filer der er markeret som værende stoppet:</h3>'
+        html += u'<h3>Filer der er markeret som værende stoppet og som kun bliver genstartet ved amnuel indgriben:</h3>'
         html += u'<p>'
         for e in stoppedState:
             html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
@@ -142,57 +200,6 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, f
         html += u'</p>'
     else:
         html += u'<p>Ingen filer er markeret som stoppet.</p>'
-
-    html += '<hr>'
-    if len(progressState) > 0:
-        # add a list of files still in progress
-        html += u'<h3>Filer som stadig er under behandling eller sat i kø:</h3>'
-        html += u'<p>'
-        for e in progressState:
-            html += u'<a href="' \
-                    + getDetailUrl(appurl, e['entity']['name']) \
-                    + '">' \
-                    + e['component'] \
-                    + ', ' \
-                    + e['stateName'] \
-                    + ', ' \
-                    + e['entity']['name'] \
-                    + '</a><br>\n'
-        html += u'</p>'
-    else:
-        html += u'<p>Ingen filer bliver processeret eller er i kø.'
-
-    html += '<hr>'
-    if len(doneState) > 0:
-        # add list of done files to the report
-        html += u'<h3>Filer importeret med success:</h3>'
-        html += u'<p>'
-        for e in doneState:
-            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
-                    + e['entity']['name'] \
-                    + u'</a><br>\n'
-        html += u'</p>'
-    else:
-        html += u'<p style="color:red">Ingen filer er blevet importeret med succes i den seneste rapporteringsperiode.</p>'
-
-    if len(failedAndInProgress) > 0:
-        # add a list of files still in progress BUT previously were in a FAILED state
-        html += u'<h3>Filer bliver behandlet men som har en historisk fejlstatus.</h3>'
-        html += u'<p>'
-        for e in failedAndInProgress:
-            html += u'<a href="'\
-                    + getDetailUrl(appurl, e['entity']['name'])\
-                    + '">'\
-                    + e['component']\
-                    + ', '\
-                    + e['stateName']\
-                    + ', '\
-                    + e['entity']['name']\
-                    + '</a><br>\n'
-        html += u'</p>'
-    else:
-        html += u'<p>Ingen filer er i fare for uendelig restart-loop.'
-
 
     # end the html part of the report
     html += u'''\
@@ -319,6 +326,7 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
 
     # Calculate the intersection
     failedAndInProgress = [e for e in historicFailedState if e['entity']['name'] in inProgressNames]
+    componentList = gatherOnComponent(failedAndInProgress)
 
 
     # Create the body of the message (only an HTML version).
@@ -329,6 +337,7 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
         inFailedState,
         inProgressState,
         failedAndInProgress,
+        componentList,
         startdatetime.strftime("%H.%M"),
         enddatetime.strftime("%H.%M"))
 
