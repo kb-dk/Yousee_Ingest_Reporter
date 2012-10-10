@@ -12,6 +12,19 @@ from email.header import Header
 from email.generator import Generator
 
 def sendMail(smtpServer, sender, recipient, subject, htmlMessage, textMessage, priority):
+    """Send the e-mail report
+
+    Keywords:
+    smtpServer  -- The SMTP server to use for sending the e-mail
+    sender      -- Sender of the e-mail
+    recipient   -- Recipient of the e-mail
+    subject     -- Subject of the e-mail
+    htmlMessage -- The HTML MIME part of the e-mail
+    textMessage -- The plain text MIME part of the e-mail
+    priority    -- The priority of the e-mail
+
+    """
+
     # Override python's weird assumption that utf-8 text should be encoded with
     # base64, and instead use quoted-printable (for both subject and body).  I
     # can't figure out a way to specify QP (quoted-printable) instead of base64 in
@@ -63,10 +76,15 @@ def sendMail(smtpServer, sender, recipient, subject, htmlMessage, textMessage, p
     s.sendmail(sender, recipient, io.getvalue())
     s.quit()
 
-# function to construct a URL for requesting detailed information on a file
-# detail URL example:
-# http://canopus:9511/ingestmonitorwebpage/#file=tv3_yousee.2217776400-2040-04-11-19.00.00_2217780000-2040-04-11-20.00.00_ftp.ts&mode=details&period=day
 def getDetailUrl(appurl, filename):
+    """Function to construct a URL for requesting detailed information on a file detail URL example:
+       http://canopus:9511/ingestmonitorwebpage/#file=tv3_yousee.2217776400-2040-04-11-19.00.00_2217780000-2040-04-11-20.00.00_ftp.ts&mode=details&period=day
+
+       Keywords:
+       appurl   -- URL of the Ingest Monitor web application
+       filename -- filename to look up in the Ingest Monitor
+
+    """
     url = appurl
     url += '/#file='
     url += filename
@@ -74,8 +92,15 @@ def getDetailUrl(appurl, filename):
     return url
 
 
-# function for requesting JSON formatted data from the workflow state monitor
 def getData(url):
+    """Function for requesting JSON formatted data from the workflow state monitor
+
+    Keywords:
+    url -- The url from which to read JSON data.
+
+    returns a list representation of the JSON data.
+
+    """
     data = ''
     request = urllib2.Request(url, headers={"Accept": "application/json"})
     try:
@@ -87,23 +112,51 @@ def getData(url):
 
     return data
 
-# function to compare two objects based on their stateName
 def compare_stateName(a, b):
+    """Function to compare two objects based on their stateName
+
+    """
+
     return cmp(a['stateName'], b['stateName'])
 
-# function to compare two objects based on their name
 def compare_name(a, b):
+    """Function to compare two objects based on their name
+
+    """
     return cmp(a['entity']['name'], b['entity']['name'])
 
+
 def gatherOnComponent(l):
+    """Gather/group the list of files in respect to the relevant components
+
+    Keywords:
+    l -- a list of objects stemming from the JSON data
+
+    returns a new list of [component, object], where each object has the same structure as elements in l
+
+    """
     newList = []
     for c in list(set([e['component'] for e in l])):
-        newList.append([c,[e for e in l if e['component'] == c]])
+        newList.append([c, [e for e in l if e['component'] == c]])
     return newList
 
 # construct the HTML part of the report email
-def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, failedAndInProgress, componentList, dayStart, dayEnd):
-    """
+def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, failedAndInProgress, componentList,
+                  dayStart, dayEnd):
+    """Construct the HTML part of the report e-mail.
+
+    Keywords:
+    appurl              -- The URL to the Ingest Monitor web application
+    doneState           -- List of files in the Done state
+    stoppedState        -- List of files in the stopped pseudo state
+    failedState         -- List of files in the pseudo failed state
+    progressState       -- List of files in the pseudo progress state
+    failedAndInProgress -- List of files in the pesudo "failed but in progress" state
+    componentList       -- List of all components relevant for the report
+    dayStart            -- String represenation of the time of day the report begins
+    dayEnd              -- String represenation of the time of day the report ends
+
+    Returns HTML formatted text for inclusion in the e-mail
 
     """
     html = u'''\
@@ -124,37 +177,38 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, f
     html += '<hr>'
     html += u'<p>I det seneste døgn blev der importeret ' + str(len(doneState)) + ' filer.</p>'
 
-#    html += '<hr>'
-#    if len(progressState) > 0:
-#        # add a list of files still in progress
-#        html += u'<h3>Filer som stadig er under behandling eller sat i kø:</h3>'
-#        html += u'<p>'
-#        for e in progressState:
-#            html += u'<a href="' \
-#                    + getDetailUrl(appurl, e['entity']['name']) \
-#                    + '">' \
-#                    + e['component'] \
-#                    + ', ' \
-#                    + e['stateName'] \
-#                    + ', ' \
-#                    + e['entity']['name'] \
-#                    + '</a><br>\n'
-#        html += u'</p>'
-#    else:
-#        html += u'<p>Ingen filer bliver processeret eller er i kø.'
+    #
+    #    html += '<hr>'
+    #    if len(progressState) > 0:
+    #        # add a list of files still in progress
+    #        html += u'<h3>Filer som stadig er under behandling eller sat i kø:</h3>'
+    #        html += u'<p>'
+    #        for e in progressState:
+    #            html += u'<a href="' \
+    #                    + getDetailUrl(appurl, e['entity']['name']) \
+    #                    + '">' \
+    #                    + e['component'] \
+    #                    + ', ' \
+    #                    + e['stateName'] \
+    #                    + ', ' \
+    #                    + e['entity']['name'] \
+    #                    + '</a><br>\n'
+    #        html += u'</p>'
+    #    else:
+    #        html += u'<p>Ingen filer bliver processeret eller er i kø.'
 
-#    html += '<hr>'
-#    if len(doneState) > 0:
-#        # add list of done files to the report
-#        html += u'<h3>Filer importeret med success:</h3>'
-#        html += u'<p>'
-#        for e in doneState:
-#            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
-#                    + e['entity']['name'] \
-#                    + u'</a><br>\n'
-#        html += u'</p>'
-#    else:
-#        html += u'<p style="color:red">Ingen filer er blevet importeret med succes i den seneste rapporteringsperiode.</p>'
+    #    html += '<hr>'
+    #    if len(doneState) > 0:
+    #        # add list of done files to the report
+    #        html += u'<h3>Filer importeret med success:</h3>'
+    #        html += u'<p>'
+    #        for e in doneState:
+    #            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
+    #                    + e['entity']['name'] \
+    #                    + u'</a><br>\n'
+    #        html += u'</p>'
+    #    else:
+    #        html += u'<p style="color:red">Ingen filer er blevet importeret med succes i den seneste rapporteringsperiode.</p>'
 
 
     if len(componentList) > 0:
@@ -180,13 +234,12 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, f
         html += u'<h3>Filer som fejlede under import og ikke er under behandling:</h3>'
         html += u'<p>'
         for e in failedState:
-            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
-                    + e['entity']['name'] \
+            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">'\
+                    + e['entity']['name']\
                     + u'</a><br>\n'
         html += u'</p>'
     else:
         html += u'<p>Ingen filer er i en fejltilstand.</p>.'
-
 
     html += '<hr>'
     if len(stoppedState) > 0:
@@ -194,8 +247,8 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, f
         html += u'<h3>Filer der er markeret som værende stoppet og som kun bliver genstartet ved amnuel indgriben:</h3>'
         html += u'<p>'
         for e in stoppedState:
-            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
-                    + e['entity']['name'] \
+            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">'\
+                    + e['entity']['name']\
                     + u'</a><br>\n'
         html += u'</p>'
     else:
@@ -212,10 +265,21 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, f
 
 # function for constructing the TEXT part of the report email.
 def writeTextbody(appurl, doneState, stoppedState, failedState, progressState, dayStart, dayEnd):
+    """Construct the plain text part of the report e-mail.
+
+    Keywords:
+    appurl              -- The URL to the Ingest Monitor web application
+    doneState           -- List of files in the Done state
+    stoppedState        -- List of files in the stopped pseudo state
+    failedState         -- List of files in the pseudo failed state
+    progressState       -- List of files in the pseudo progress state
+    dayStart            -- String represenation of the time of day the report begins
+    dayEnd              -- String represenation of the time of day the report ends
+
+    Returns the text to include in the e-mail
+    """
     text = u'''\
     Kære Operatør
-
-       Hvordan går det med dig? Har du det godt?
 
        Jeg har her en rapport over hvordan det er gået med opsamling af YouSee
        TV i det seneste døgn.
@@ -264,11 +328,23 @@ def writeTextbody(appurl, doneState, stoppedState, failedState, progressState, d
     return text
 
 def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTime, recipient, sender, subject, smtpServer):
-    # Get a list of all files that have been ingested in the last 24 hours (or,
-    # actually, from 'doneStartTime' o'clock yesterday to 24 hours later. Just
-    # enough time for a whole season of a really great TV series)
-    yesterday=datetime.datetime.now() - datetime.timedelta(days=1)
-    startdatetime=datetime.datetime.combine(
+    """Get a list of all files that have been ingested in the last 24 hours (or,
+    actually, from 'doneStartTime' o'clock yesterday to 24 hours later. Just
+    enough time for a whole season of a really great TV series)
+
+    Keyword arguments:
+    workflowstatemonitorUrl -- The URL of the Work Flow State Monitor
+    ingestmonitorwebpageUrl -- The URL of the Ingest Monitor
+    doneStartTime           -- The time of yesterday for when the report should start. doneStartTime is formatted as a
+                               list of two strings representing the hour and minute.
+    recipient               -- The e-mail recipient of the report
+    sender                  -- The e-mail sender of the report
+    subject                 -- The e-mail subject
+    smtpServer              -- The SMTP server to use for sending the e-mail report
+    """
+
+    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+    startdatetime = datetime.datetime.combine(
         # yesterday's date
         datetime.date(
             yesterday.year,
@@ -279,7 +355,7 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
             int(doneStartTime[0]),
             int(doneStartTime[1])))
 
-    enddatetime=startdatetime + datetime.timedelta(days=1)
+    enddatetime = startdatetime + datetime.timedelta(days=1)
 
     doneStartDate = startdatetime.isoformat()
     doneEndDate = enddatetime.isoformat()
