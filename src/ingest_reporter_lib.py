@@ -141,8 +141,7 @@ def gatherOnComponent(l):
     return newList
 
 # construct the HTML part of the report email
-def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, failedAndInProgress, componentList,
-                  dayStart, dayEnd):
+def writeHTMLbody(appurl, doneState, stoppedState, failedState, componentList, dayStart, dayEnd):
     """Construct the HTML part of the report e-mail.
 
     Keywords:
@@ -150,9 +149,8 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, f
     doneState           -- List of files in the Done state
     stoppedState        -- List of files in the stopped pseudo state
     failedState         -- List of files in the pseudo failed state
-    progressState       -- List of files in the pseudo progress state
-    failedAndInProgress -- List of files in the pesudo "failed but in progress" state
-    componentList       -- List of all components relevant for the report
+    componentList       -- List of all objects still in progress but with a historic failed state. The list is grouped
+                           by the relevant component.
     dayStart            -- String represenation of the time of day the report begins
     dayEnd              -- String represenation of the time of day the report ends
 
@@ -377,8 +375,6 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
         inDoneState,
         inStoppedState,
         inFailedState,
-        inProgressState,
-        failedAndInProgress,
         componentList,
         startdatetime.strftime("%H.%M"),
         enddatetime.strftime("%H.%M"))
