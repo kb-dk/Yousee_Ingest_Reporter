@@ -177,40 +177,6 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, progressState, f
     html += '<hr>'
     html += u'<p>I det seneste døgn blev der importeret ' + str(len(doneState)) + ' filer.</p>'
 
-    #
-    #    html += '<hr>'
-    #    if len(progressState) > 0:
-    #        # add a list of files still in progress
-    #        html += u'<h3>Filer som stadig er under behandling eller sat i kø:</h3>'
-    #        html += u'<p>'
-    #        for e in progressState:
-    #            html += u'<a href="' \
-    #                    + getDetailUrl(appurl, e['entity']['name']) \
-    #                    + '">' \
-    #                    + e['component'] \
-    #                    + ', ' \
-    #                    + e['stateName'] \
-    #                    + ', ' \
-    #                    + e['entity']['name'] \
-    #                    + '</a><br>\n'
-    #        html += u'</p>'
-    #    else:
-    #        html += u'<p>Ingen filer bliver processeret eller er i kø.'
-
-    #    html += '<hr>'
-    #    if len(doneState) > 0:
-    #        # add list of done files to the report
-    #        html += u'<h3>Filer importeret med success:</h3>'
-    #        html += u'<p>'
-    #        for e in doneState:
-    #            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">' \
-    #                    + e['entity']['name'] \
-    #                    + u'</a><br>\n'
-    #        html += u'</p>'
-    #    else:
-    #        html += u'<p style="color:red">Ingen filer er blevet importeret med succes i den seneste rapporteringsperiode.</p>'
-
-
     if len(componentList) > 0:
         # add a list of files still in progress BUT previously were in a FAILED state
         # grouped by the component
