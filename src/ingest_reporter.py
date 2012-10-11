@@ -11,7 +11,7 @@ from ingest_reporter_lib import *
 ## parse command line argument and settings file
 ##
 parser = argparse.ArgumentParser(description='YouSee døgnrapport')
-parser.add_argument('-settings', '-s', nargs=1, action="store", dest="settingsFile",
+parser.add_argument('--settings', '-s', nargs=1, action="store", dest="settingsFile",
     help='full path to settings file. Settings are in the INI file syntax.')
 args = parser.parse_args()
 
