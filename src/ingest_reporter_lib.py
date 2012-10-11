@@ -178,7 +178,7 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, componentList, d
     if len(componentList) > 0:
         # add a list of files still in progress BUT previously were in a FAILED state
         # grouped by the component
-        html += u'<h3>Filer som tidligere fejlede og nu forsøges genbehandlet.</h3>'
+        html += u'<h3>Filer som tidligere fejlede men som stadig er under behandling eller er belvet genstartet.</h3>'
         html += u'<p>'
         for component in componentList:
             html += u'<h4>Følgende filer fejlede i ' + component[0] + ' komponenten:</h4>'
@@ -195,7 +195,7 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, componentList, d
     html += '<hr>'
     if len(failedState) > 0:
         # add a list of failed files to the report.
-        html += u'<h3>Filer som fejlede under import og ikke er under behandling:</h3>'
+        html += u'<h3>Filer som fejlede og ikke længere er under behandling:</h3>'
         html += u'<p>'
         for e in failedState:
             html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">'\
@@ -208,7 +208,7 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, componentList, d
     html += '<hr>'
     if len(stoppedState) > 0:
         # add a list of failed files to the report.
-        html += u'<h3>Filer der er markeret som værende stoppet og som kun bliver genstartet ved amnuel indgriben:</h3>'
+        html += u'<h3>Filer der er markeret som værende stoppet og som kun bliver genstartet ved manuel indgriben:</h3>'
         html += u'<p>'
         for e in stoppedState:
             html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">'\
