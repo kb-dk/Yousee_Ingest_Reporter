@@ -241,6 +241,7 @@ def writeTextbody(appurl, doneState, stoppedState, failedState, progressState, d
     dayEnd              -- String represenation of the time of day the report ends
 
     Returns the text to include in the e-mail
+
     """
     text = u'''\
     Kære Operatør
@@ -305,6 +306,7 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
     sender                  -- The e-mail sender of the report
     subject                 -- The e-mail subject
     smtpServer              -- The SMTP server to use for sending the e-mail report
+
     """
 
     yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
