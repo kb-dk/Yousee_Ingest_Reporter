@@ -320,11 +320,11 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
                 + '&endDate='
                 + doneEndDate))
 
-    inStoppedState = getData(workflowstatemonitorUrl + '/states/?include=Stopped&onlyLast=true')
+    inStoppedState = getData(workflowstatemonitorUrl + '/states/?includes=Stopped&onlyLast=true')
 
     # if any files are in the failed state, set the priority of the email to 1 (high)
     # If no files have failed, set the priority to 5 (low)
-    if len(getData(workflowstatemonitorUrl + '/states/?include=Failed&onlyLast=true')) > 0:
+    if len(getData(workflowstatemonitorUrl + '/states/?includes=Failed&onlyLast=true')) > 0:
         emailPriority = '1'
     else:
         emailPriority = '5'
