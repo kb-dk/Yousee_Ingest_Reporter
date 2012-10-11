@@ -141,18 +141,18 @@ def gatherOnComponent(l):
     return newList
 
 # construct the HTML part of the report email
-def writeHTMLbody(appurl, doneState, stoppedState, failedState, componentList, dayStart, dayEnd):
+def writeHTMLbody(appurl, numberOfCompletedFiles, stoppedState, componentList, dayStart, dayEnd):
     """Construct the HTML part of the report e-mail.
 
     Keywords:
-    appurl              -- The URL to the Ingest Monitor web application
-    doneState           -- List of files in the Done state
-    stoppedState        -- List of files in the stopped pseudo state
-    failedState         -- List of files in the pseudo failed state
-    componentList       -- List of all objects still in progress but with a historic failed state. The list is grouped
-                           by the relevant component.
-    dayStart            -- String represenation of the time of day the report begins
-    dayEnd              -- String represenation of the time of day the report ends
+    appurl                 -- The URL to the Ingest Monitor web application
+    numberOfCompletedFiles -- List of files in the Done state
+    stoppedState           -- List of files in the stopped pseudo state
+    failedState            -- List of files in the pseudo failed state
+    componentList          -- List of all objects still in progress but with a historic failed state. The list is grouped
+                              by the relevant component.
+    dayStart               -- String represenation of the time of day the report begins
+    dayEnd                 -- String represenation of the time of day the report ends
 
     Returns HTML formatted text for inclusion in the e-mail
 
@@ -173,7 +173,7 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, componentList, d
 ''' % {'url': appurl, 'start': dayStart, 'end': dayEnd}
 
     html += '<hr>'
-    html += u'<p>I det seneste døgn blev der importeret ' + str(len(doneState)) + ' filer.</p>'
+    html += u'<p>I det seneste døgn blev der med succes blevet behandlet ' + str(numberOfCompletedFiles) + ' filer.</p>'
 
     if len(componentList) > 0:
         # add a list of files still in progress BUT previously were in a FAILED state
@@ -191,19 +191,6 @@ def writeHTMLbody(appurl, doneState, stoppedState, failedState, componentList, d
             html += u'</p>'
     else:
         html += u'<p>Ingen filer under behandling har en fejlstatus.</p>'
-
-    html += '<hr>'
-    if len(failedState) > 0:
-        # add a list of failed files to the report.
-        html += u'<h3>Filer som fejlede og ikke længere er under behandling:</h3>'
-        html += u'<p>'
-        for e in failedState:
-            html += u'<a href="' + getDetailUrl(appurl, e['entity']['name']) + '">'\
-                    + e['entity']['name']\
-                    + u'</a><br>\n'
-        html += u'</p>'
-    else:
-        html += u'<p>Ingen filer er i en fejltilstand.</p>.'
 
     html += '<hr>'
     if len(stoppedState) > 0:
@@ -326,32 +313,21 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
     doneStartDate = startdatetime.isoformat()
     doneEndDate = enddatetime.isoformat()
 
-    # get a list of files in "Done" state. For each file only the last state is
-    # requested.
-    inDoneState = getData(
-        workflowstatemonitorUrl + '/states/?includes=Done&onlyLast=true&startDate=' + doneStartDate + '&endDate=' + doneEndDate)
+    numberOfCompletedFiles = len(
+        getData(workflowstatemonitorUrl
+                + '/states/?includes=Done&onlyLast=true&startDate='
+                + doneStartDate
+                + '&endDate='
+                + doneEndDate))
 
-    # get all files not in Done state regardless of date and time. For each file
-    # only the last state is requested.
-    notInDoneState = getData(workflowstatemonitorUrl + '/states/?excludes=Done&onlyLast=true')
-
-    # States Stopped and Failed are special, the rest of the of files are
-    # considered to be in progress. Progress also includes "Queued" files.
-    inStoppedState = [e for e in notInDoneState if e['stateName'] == 'Stopped']
-    inFailedState = [e for e in notInDoneState if e['stateName'] == 'Failed']
+    inStoppedState = getData(workflowstatemonitorUrl + '/states/?include=Stopped&onlyLast=true')
 
     # if any files are in the failed state, set the priority of the email to 1 (high)
     # If no files have failed, set the priority to 5 (low)
-    if len(inFailedState) > 0:
+    if len(getData(workflowstatemonitorUrl + '/states/?include=Failed&onlyLast=true')) > 0:
         emailPriority = '1'
     else:
         emailPriority = '5'
-
-    # gather all files that are not either failed or done. The list is ordered by
-    # stateName using the compare_stateName function defined above.
-    inProgressState = sorted(
-        [e for e in notInDoneState if e['stateName'] != 'Stopped' and e['stateName'] != 'Failed'],
-        compare_stateName)
 
     ## Implementation of the functionality that ensures no failed object will be
     ## overlooked because of automatic restart.
@@ -362,21 +338,19 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
     ## historic objects.
     historicFailedState = getData(workflowstatemonitorUrl + '/states/?includes=Failed')
 
-    # Extract a set of object names on objects in progress
+    # Extract a set of file names of files in progress. I.e. all files that don't have Done as the last state
     inProgressNames = set(
-        [e['entity']['name'] for e in getData(workflowstatemonitorUrl + '/states/?excludes=Done')])
+        [e['entity']['name'] for e in getData(workflowstatemonitorUrl + '/states/?excludes=Done&onlyLast=true')])
 
-    # Calculate the intersection
+    # Calculate a new list consisting of all files inhistoricFailedState that are also in inProgressNames
     failedAndInProgress = [e for e in historicFailedState if e['entity']['name'] in inProgressNames]
     componentList = gatherOnComponent(failedAndInProgress)
-
 
     # Create the body of the message (only an HTML version).
     htmlMessage = writeHTMLbody(
         ingestmonitorwebpageUrl,
-        inDoneState,
+        numberOfCompletedFiles,
         inStoppedState,
-        inFailedState,
         componentList,
         startdatetime.strftime("%H.%M"),
         enddatetime.strftime("%H.%M"))
