@@ -190,7 +190,7 @@ def writeHTMLbody(appurl, numberOfCompletedFiles, stoppedState, componentList, d
     if len(componentList) > 0:
         # add a list of files still in progress BUT previously were in a FAILED state
         # grouped by the component
-        html += u'<h3>Filer som tidligere fejlede men som stadig er under behandling eller er belvet genstartet.</h3>'
+        html += u'<h3>Filer som tidligere fejlede men som stadig er under behandling eller er blevet genstartet.</h3>'
         html += u'<p>'
         for component in componentList:
             html += u'<h4>Følgende filer fejlede i ' + component[0] + ' komponenten:</h4>'
