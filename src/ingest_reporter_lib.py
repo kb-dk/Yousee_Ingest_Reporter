@@ -50,17 +50,17 @@ def sendMail(smtpServer, sender, recipient, subject, htmlMessage, textMessage, p
     # Record the MIME types of both parts - text/plain and text/html.
     # Add support for empty text part
     if not textMessage == '':
-        part1 = MIMEText(textMessage.encode('utf-8'), 'plain', 'UTF-8')
-    part2 = MIMEText(htmlMessage.encode('utf-8'), 'html', 'UTF-8')
+        textPart = MIMEText(textMessage.encode('utf-8'), 'plain', 'UTF-8')
+    htmlPart = MIMEText(htmlMessage.encode('utf-8'), 'html', 'UTF-8')
 
     # Attach parts into message container.
     # According to RFC 2046, the last part of a multipart message, in this case
     # the HTML message, is best and preferred.
     # Add support for empty text part
     if not textMessage == '':
-        msg.attach(part1)
+        msg.attach(textPart)
 
-    msg.attach(part2)
+    msg.attach(htmlPart)
 
     # And here we have to instantiate a Generator object to convert the multipart
     # object to a string (can't use multipart.as_string, because that escapes
@@ -132,12 +132,24 @@ def gatherOnComponent(l):
     Keywords:
     l -- a list of objects stemming from the JSON data
 
-    returns a new list of [component, object], where each object has the same structure as elements in l
+    l: [l_1, l_2, …, l_N],
+
+    where l_i: is a dict structure of JSON
+
+    l_i: {…, 'component': <componentName>, …}
+
+    We want a new list that still includes all elements from l but grouped by the 'component' key of l_i using tuples
+
+    K: [(c_1, L_c_1), (c_2, L_c_2), …]],
+
+    where c_1 is 'component' c_1 and L_c_1 is a list of all elements in l which has 'component' c_1.
 
     """
     newList = []
     for c in list(set([e['component'] for e in l])):
-        newList.append([c, [e for e in l if e['component'] == c]])
+        newList.append((c, [e for e in l if e['component'] == c]))
+
+    # return the K from the docstring
     return newList
 
 # construct the HTML part of the report email

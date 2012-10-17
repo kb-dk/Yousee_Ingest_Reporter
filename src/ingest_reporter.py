@@ -22,12 +22,12 @@ with codecs.open(args.settingsFile[0], 'r', encoding='utf-8') as f:
 if not configParser.has_section('init'):
     raise Exception("Error in settings file: No init section.")
 
-if not configParser.has_section('mail'):
-    raise Exception("Error in settings file: No mail section.")
-
 for parameter in ['workflowstatemonitorUrl', 'ingestmonitorwebpageUrl', 'doneStartTime']:
     if not configParser.has_option('init', parameter):
         raise Exception("Error in settings file: No '" + parameter + "' parameter in init section.")
+
+if not configParser.has_section('mail'):
+    raise Exception("Error in settings file: No mail section.")
 
 for parameter in ['recipient', 'sender', 'subject', 'smtpServer']:
     if not configParser.has_option('mail', parameter):
