@@ -69,11 +69,14 @@ def sendMail(smtpServer, sender, recipient, subject, htmlMessage, textMessage, p
     g = Generator(io, False)
     g.flatten(msg)
 
+    # sendmail does not respect "," as email-delimiter, so they are split manually
+    recipients = [r.strip() for r in recipient.split(",")]
+
     # Send the message via local SMTP server.
     s = smtplib.SMTP(smtpServer)
     # sendmail function takes 3 arguments: sender's address, recipient's address
     # and message to send - here it is sent as one string.
-    s.sendmail(sender, recipient, io.getvalue())
+    s.sendmail(sender, recipients, io.getvalue())
     s.quit()
 
 def getDetailUrl(appurl, filename):
