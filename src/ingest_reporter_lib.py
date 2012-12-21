@@ -358,7 +358,7 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
 
     # Extract a set of file names of files in progress. I.e. all files that don't have Done as the last state
     inProgressNames = set(
-        [e['entity']['name'] for e in getData(workflowstatemonitorUrl + '/states/?excludes=Done&onlyLast=true')])
+        [e['entity']['name'] for e in getData(workflowstatemonitorUrl + '/states/?excludes=Done&excludes=Stopped&onlyLast=true')])
 
     # Calculate a new list consisting of all files inhistoricFailedState that are also in inProgressNames
     failedAndInProgress = [e for e in historicFailedState if e['entity']['name'] in inProgressNames]
