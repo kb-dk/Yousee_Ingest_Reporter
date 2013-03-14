@@ -197,11 +197,12 @@ def writeHTMLbody(appurl, numberOfCompletedFiles, stoppedState, componentList, d
         html += u'<p>'
         for component in componentList:
             html += u'<h4>Følgende filer fejlede i ' + component[0] + ' komponenten:</h4>'
-            for e in component[1]:
+	    newList = set([e['entity']['name'] for e in component[1]])
+            for e in newList:
                 html += u'<a href="'\
-                        + getDetailUrl(appurl, e['entity']['name'])\
+                        + getDetailUrl(appurl, e)\
                         + '">'\
-                        + e['entity']['name']\
+                        + e\
                         + '</a><br>\n'
             html += u'</p>'
     else:
