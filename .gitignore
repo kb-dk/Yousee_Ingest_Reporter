@@ -4,5 +4,9 @@
 .idea/*
 .idea/.name
 
+.project
+.pydevproject
+
+
 *.swp
 tags
