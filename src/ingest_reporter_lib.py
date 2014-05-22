@@ -365,6 +365,19 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
     failedAndInProgress = [e for e in historicFailedState if e['entity']['name'] in inProgressNames]
     componentList = gatherOnComponent(failedAndInProgress)
 
+    # Clean out 'Yousee Ingest Initiator' if it did not fail the interval that the report covers
+    numberOfIngestInitiatorFailures = len(
+        getData(workflowstatemonitorUrl
+                + '/states/Yousee%20Ingest%20Initiator?&startDate='
+                + doneStartDate
+                + '&includes=Failed'))
+
+    if(numberOfIngestInitiatorFailures == 0):
+        for i in range(len(componentList)):
+            if(componentList[i][0] == 'Yousee Ingest Initiator'):
+                del componentList[i]
+                break;  
+
     # Create the body of the message (only an HTML version).
     htmlMessage = writeHTMLbody(
         ingestmonitorwebpageUrl,
