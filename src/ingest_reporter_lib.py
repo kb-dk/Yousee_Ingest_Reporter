@@ -370,6 +370,8 @@ def executeReport(workflowstatemonitorUrl, ingestmonitorwebpageUrl, doneStartTim
         getData(workflowstatemonitorUrl
                 + '/states/Yousee%20Ingest%20Initiator?&startDate='
                 + doneStartDate
+                + '&endDate='
+                + doneEndDate
                 + '&includes=Failed'))
 
     if(numberOfIngestInitiatorFailures == 0):
